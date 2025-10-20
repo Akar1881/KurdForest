@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= websiteName %> - Search Results</title>
+  <link rel="stylesheet" href="/css/global2.css">
+  <link rel="stylesheet" href="/css/search.css">
+</head>
+<body>
+  <%- include('partials/header') %>
+
+  <main class="main-content">
+    <div class="page-header">
+      <h1 class="page-title">Search Results<% if (query) { %> for "<%= query %>"<% } %></h1>
+    </div>
+
+    <% if (!query) { %>
+      <div class="empty-state">
+        <p>Enter a search query to find movies, TV shows, and anime.</p>
+      </div>
+    <% } else { %>
+      <% if (movies.length > 0) { %>
+        <section class="content-section">
+          <h2 class="section-title">Movies</h2>
+          <div class="grid">
+            <% movies.slice(0, 10).forEach(movie => { %>
+              <a href="/watch/movie/<%= movie.id %>" class="card">
+                <div class="card-poster">
+                  <% if (movie.poster_path) { %>
+                    <img src="https://image.tmdb.org/t/p/w500<%= movie.poster_path %>" alt="<%= movie.title %>">
+                  <% } else { %>
+                    <div class="no-poster">No Image</div>
+                  <% } %>
+                  <div class="card-overlay"></div>
+                </div>
+                <div class="card-info">
+                  <h3 class="card-title"><%= movie.title %></h3>
+                  <p class="card-overview"><%= (movie.overview || '').substring(0, 120) %><%= movie.overview && movie.overview.length > 120 ? '...' : '' %></p>
+                  <div class="card-rating">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="#0fa35a">
+                      <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                    </svg>
+                    <span><%= movie.vote_average ? movie.vote_average.toFixed(1) : 'N/A' %></span>
+                  </div>
+                </div>
+              </a>
+            <% }) %>
+          </div>
+        </section>
+      <% } %>
+
+      <% if (shows.length > 0) { %>
+        <section class="content-section">
+          <h2 class="section-title">TV Shows</h2>
+          <div class="grid">
+            <% shows.slice(0, 10).forEach(show => { %>
+              <a href="/watch/tv/<%= show.id %>" class="card">
+                <div class="card-poster">
+                  <% if (show.poster_path) { %>
+                    <img src="https://image.tmdb.org/t/p/w500<%= show.poster_path %>" alt="<%= show.name %>">
+                  <% } else { %>
+                    <div class="no-poster">No Image</div>
+                  <% } %>
+                  <div class="card-overlay"></div>
+                </div>
+                <div class="card-info">
+                  <h3 class="card-title"><%= show.name %></h3>
+                  <p class="card-overview"><%= (show.overview || '').substring(0, 120) %><%= show.overview && show.overview.length > 120 ? '...' : '' %></p>
+                  <div class="card-rating">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="#0fa35a">
+                      <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                    </svg>
+                    <span><%= show.vote_average ? show.vote_average.toFixed(1) : 'N/A' %></span>
+                  </div>
+                </div>
+              </a>
+            <% }) %>
+          </div>
+        </section>
+      <% } %>
+
+      <% if (anime.length > 0) { %>
+        <section class="content-section">
+          <h2 class="section-title">Anime</h2>
+          <div class="grid">
+            <% anime.slice(0, 10).forEach(show => { %>
+              <a href="/watch/anime/<%= show.id %>" class="card">
+                <div class="card-poster">
+                  <% if (show.poster_path) { %>
+                    <img src="https://image.tmdb.org/t/p/w500<%= show.poster_path %>" alt="<%= show.name %>">
+                  <% } else { %>
+                    <div class="no-poster">No Image</div>
+                  <% } %>
+                  <div class="card-overlay"></div>
+                </div>
+                <div class="card-info">
+                  <h3 class="card-title"><%= show.name %></h3>
+                  <p class="card-overview"><%= (show.overview || '').substring(0, 120) %><%= show.overview && show.overview.length > 120 ? '...' : '' %></p>
+                  <div class="card-rating">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="#0fa35a">
+                      <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                    </svg>
+                    <span><%= show.vote_average ? show.vote_average.toFixed(1) : 'N/A' %></span>
+                  </div>
+                </div>
+              </a>
+            <% }) %>
+          </div>
+        </section>
+      <% } %>
+
+      <% if (movies.length === 0 && shows.length === 0 && anime.length === 0) { %>
+        <div class="empty-state">
+          <p>No results found for "<%= query %>"</p>
+        </div>
+      <% } %>
+    <% } %>
+  </main>
+
+  <%- include('partials/footer') %>
+</body>
+</html>

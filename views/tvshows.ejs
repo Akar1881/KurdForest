@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= websiteName %> - TV Shows</title>
+  <link rel="stylesheet" href="/css/global.css">
+  <link rel="stylesheet" href="/css/tvshows.css">
+</head>
+<body>
+  <%- include('partials/header') %>
+
+  <main class="main-content">
+    <div class="page-header">
+      <h1 class="page-title">TV Shows</h1>
+    </div>
+
+    <section class="filters">
+      <form action="/tvshows" method="GET" class="filter-form">
+        <select name="genre" class="filter-select">
+          <option value="">All Genres</option>
+          <% genres.forEach(genre => { %>
+            <option value="<%= genre.id %>" <%= filters.genre == genre.id ? 'selected' : '' %>><%= genre.name %></option>
+          <% }) %>
+        </select>
+
+        <input
+          type="number"
+          name="year"
+          placeholder="Year"
+          class="filter-input"
+          value="<%= filters.year || '' %>"
+          min="1900"
+          max="2030"
+        >
+
+        <select name="status" class="filter-select">
+          <option value="">All Status</option>
+          <option value="0" <%= filters.status === '0' ? 'selected' : '' %>>Returning Series</option>
+          <option value="2" <%= filters.status === '2' ? 'selected' : '' %>>Ended</option>
+        </select>
+
+        <select name="sort" class="filter-select">
+          <option value="popularity.desc" <%= filters.sort === 'popularity.desc' ? 'selected' : '' %>>Popular</option>
+          <option value="vote_average.desc" <%= filters.sort === 'vote_average.desc' ? 'selected' : '' %>>Top Rated</option>
+          <option value="first_air_date.desc" <%= filters.sort === 'first_air_date.desc' ? 'selected' : '' %>>Latest</option>
+        </select>
+
+        <button type="submit" class="filter-btn">Apply</button>
+      </form>
+    </section>
+
+    <section class="content-section">
+      <div class="grid">
+        <% shows.forEach(show => { %>
+          <a href="/watch/tv/<%= show.id %>" class="card">
+            <div class="card-poster">
+              <% if (show.poster_path) { %>
+                <img src="https://image.tmdb.org/t/p/w500<%= show.poster_path %>" alt="<%= show.name %>">
+              <% } else { %>
+                <div class="no-poster">No Image</div>
+              <% } %>
+              <div class="card-overlay"></div>
+            </div>
+            <div class="card-info">
+              <h3 class="card-title"><%= show.name %></h3>
+              <p class="card-overview"><%= (show.overview || '').substring(0, 120) %><%= show.overview && show.overview.length > 120 ? '...' : '' %></p>
+              <div class="card-rating">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="#0fa35a">
+                  <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                </svg>
+                <span><%= show.vote_average ? show.vote_average.toFixed(1) : 'N/A' %></span>
+              </div>
+            </div>
+          </a>
+        <% }) %>
+      </div>
+    </section>
+
+    <% if (totalPages > 1) { %>
+      <div class="pagination">
+        <% if (currentPage > 1) { %>
+          <a href="?page=<%= currentPage - 1 %><%= filters.genre ? '&genre=' + filters.genre : '' %><%= filters.year ? '&year=' + filters.year : '' %><%= filters.status ? '&status=' + filters.status : '' %>&sort=<%= filters.sort %>" class="pagination-btn">Previous</a>
+        <% } %>
+        <span class="pagination-info">Page <%= currentPage %> of <%= totalPages %></span>
+        <% if (currentPage < totalPages) { %>
+          <a href="?page=<%= currentPage + 1 %><%= filters.genre ? '&genre=' + filters.genre : '' %><%= filters.year ? '&year=' + filters.year : '' %><%= filters.status ? '&status=' + filters.status : '' %>&sort=<%= filters.sort %>" class="pagination-btn">Next</a>
+        <% } %>
+      </div>
+    <% } %>
+  </main>
+
+  <%- include('partials/footer') %>
+</body>
+</html>

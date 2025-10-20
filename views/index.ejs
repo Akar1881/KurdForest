@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= websiteName %> - Home</title>
+  <link rel="stylesheet" href="/css/global2.css">
+  <link rel="stylesheet" href="/css/index.css">
+</head>
+<body>
+  <%- include('partials/header') %>
+
+  <main class="main-content">
+    <section class="hero">  
+      <img src="/images/banner.svg" alt="<%= websiteName %> Banner" class="hero-image">  
+    </section>
+
+    <section class="content-section">
+      <h2 class="section-title">Trending Now</h2>
+      <div class="grid">
+        <% trending.forEach(item => { %>
+          <a href="/watch/<%= item.media_type %>/<%= item.id %>" class="card">
+            <div class="card-poster">
+              <% if (item.poster_path) { %>
+                <img src="https://image.tmdb.org/t/p/w500<%= item.poster_path %>" alt="<%= item.title || item.name %>">
+              <% } else { %>
+                <div class="no-poster">No Image</div>
+              <% } %>
+              <div class="card-overlay"></div>
+            </div>
+            <div class="card-info">
+              <h3 class="card-title"><%= item.title || item.name %></h3>
+              <p class="card-overview"><%= (item.overview || '').substring(0, 120) %><%= item.overview && item.overview.length > 120 ? '...' : '' %></p>
+              <div class="card-rating">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="#0fa35a">
+                  <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                </svg>
+                <span><%= item.vote_average ? item.vote_average.toFixed(1) : 'N/A' %></span>
+              </div>
+            </div>
+          </a>
+        <% }) %>
+      </div>
+    </section>
+
+    <section class="content-section">
+      <h2 class="section-title">New Releases</h2>
+      <div class="grid">
+        <% newReleases.forEach(item => { %>
+          <a href="/watch/movie/<%= item.id %>" class="card">
+            <div class="card-poster">
+              <% if (item.poster_path) { %>
+                <img src="https://image.tmdb.org/t/p/w500<%= item.poster_path %>" alt="<%= item.title %>">
+              <% } else { %>
+                <div class="no-poster">No Image</div>
+              <% } %>
+              <div class="card-overlay"></div>
+            </div>
+            <div class="card-info">
+              <h3 class="card-title"><%= item.title %></h3>
+              <p class="card-overview"><%= (item.overview || '').substring(0, 120) %><%= item.overview && item.overview.length > 120 ? '...' : '' %></p>
+              <div class="card-rating">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="#0fa35a">
+                  <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                </svg>
+                <span><%= item.vote_average ? item.vote_average.toFixed(1) : 'N/A' %></span>
+              </div>
+            </div>
+          </a>
+        <% }) %>
+      </div>
+    </section>
+
+    <section class="content-section">
+      <h2 class="section-title">Classic Movies</h2>
+      <div class="grid">
+        <% classic.forEach(item => { %>
+          <a href="/watch/movie/<%= item.id %>" class="card">
+            <div class="card-poster">
+              <% if (item.poster_path) { %>
+                <img src="https://image.tmdb.org/t/p/w500<%= item.poster_path %>" alt="<%= item.title %>">
+              <% } else { %>
+                <div class="no-poster">No Image</div>
+              <% } %>
+              <div class="card-overlay"></div>
+            </div>
+            <div class="card-info">
+              <h3 class="card-title"><%= item.title %></h3>
+              <p class="card-overview"><%= (item.overview || '').substring(0, 120) %><%= item.overview && item.overview.length > 120 ? '...' : '' %></p>
+              <div class="card-rating">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="#0fa35a">
+                  <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                </svg>
+                <span><%= item.vote_average ? item.vote_average.toFixed(1) : 'N/A' %></span>
+              </div>
+            </div>
+          </a>
+        <% }) %>
+      </div>
+    </section>
+  </main>
+
+  <%- include('partials/footer') %>
+</body>
+</html>
