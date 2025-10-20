@@ -142,25 +142,19 @@ router.get('/watch/:type/:id', async (req, res) => {
   try {
     const { type, id } = req.params;
     let endpoint = '';
-    let finalType = type;
-    let nextEpisode = null;
 
     if (type === 'movie') {
       endpoint = `/movie/${id}`;
     } else if (type === 'tv' || type === 'anime') {
-      endpoint = `/tv/${id}`;
+      endpoint = `/tv/${id}`; // TMDB treats anime as TV shows
     } else {
       return res.status(400).send('Invalid type');
     }
 
     const details = await fetchTMDB(endpoint);
 
-    // Detect if anime is episodic or movie-like
-    if (type === 'anime') {
-      finalType = (details.seasons && details.seasons.length > 0) ? 'animeTV' : 'animeMovie';
-    }
-
-    // Get next episode info if it exists
+    // Next episode info
+    let nextEpisode = null;
     if (details.next_episode_to_air) {
       const airDate = new Date(details.next_episode_to_air.air_date);
       const day = String(airDate.getDate()).padStart(2, '0');
@@ -176,11 +170,12 @@ router.get('/watch/:type/:id', async (req, res) => {
     }
 
     res.render('watch', {
-      type: finalType,
+      type,       // 'movie', 'tv', 'anime'
       id,
       details,
       nextEpisode
     });
+
   } catch (error) {
     console.error('Watch page error:', error);
     res.status(500).send('Error loading watch page');

@@ -19,6 +19,7 @@
       Back
     </button>
 
+    <!-- Info Section -->
     <div class="info-section">
       <div class="info-poster">
         <% if (details.poster_path) { %>
@@ -58,6 +59,7 @@
       </div>
     </div>
 
+    <!-- Next Episode Alert -->
     <% if (nextEpisode) { %>
       <div class="next-episode-alert">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="#ff9800">
@@ -78,26 +80,20 @@
       <p>We are not hosting any of the content. Our streaming providers do it, so it may contain ads. Use Brave Browser for a better experience.</p>
     </div>
 
+    <!-- Player Section -->
     <div class="watch-container">
       <div class="player-section">
         <div class="player-wrapper">
           <iframe
             id="player"
-            src="
-              <%= type === 'movie'
-                ? `https://vidlink.pro/movie/${id}`
-                : type === 'animeMovie'
-                ? `https://vidlink.pro/anime/${id}/sub`
-                : type === 'animeTV'
-                ? `https://vidlink.pro/anime/${id}/1/sub`
-                : `https://vidlink.pro/tv/${id}/1/1` %>"
+            src="<%= type === 'movie' ? `https://vidlink.pro/movie/${id}` : type === 'anime' ? `https://vidlink.pro/tv/${id}/1/1` : `https://vidlink.pro/tv/${id}/1/1` %>"
             allowfullscreen
             loading="lazy"
             frameborder="0"
           ></iframe>
         </div>
 
-        <% if (type === 'tv' || type === 'animeTV') { %>
+        <% if (type === 'tv' || type === 'anime') { %>
           <div class="controls">
             <div class="control-group">
               <label for="season">Season:</label>
@@ -128,7 +124,7 @@
 
   <%- include('partials/footer') %>
 
-  <% if (type === 'tv' || type === 'animeTV') { %>
+  <% if (type === 'tv' || type === 'anime') { %>
     <script>
       const type = '<%= type %>';
       const id = '<%= id %>';
@@ -159,16 +155,20 @@
         const season = seasonSelect.value;
         const episode = episodeSelect.value;
 
-        if (type === 'animeTV') {
-          player.src = `https://vidlink.pro/anime/${id}/${season}/sub`;
-        } else {
-          player.src = `https://vidlink.pro/tv/${id}/${season}/${episode}`;
-        }
+        if (type === 'anime') {
+            player.src = `https://vidlink.pro/tv/${id}/${season}/${episode}`;
+          } else {
+            player.src = `https://vidlink.pro/tv/${id}/${season}/${episode}`;
+          }
       }
 
-      seasonSelect.addEventListener('change', () => loadEpisodes(seasonSelect.value));
+      seasonSelect.addEventListener('change', () => {
+        loadEpisodes(seasonSelect.value);
+      });
+
       episodeSelect.addEventListener('change', updatePlayer);
 
+      // Load first season episodes on page load
       loadEpisodes(seasonSelect.value);
     </script>
   <% } %>
