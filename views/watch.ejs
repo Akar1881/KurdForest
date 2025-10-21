@@ -85,9 +85,8 @@
       <div class="player-section">
         <div class="player-wrapper">
           <iframe
-  id="player"
-  src="<%= type === 'movie' ? `https://vidlink.pro/movie/${id}` : type === 'anime' ? `https://vidlink.pro/tv/${id}/1/1` : `https://vidlink.pro/tv/${id}/1/1` %>"
-  sandbox="allow-scripts allow-same-origin allow-fullscreen"
+  src="/cleanplayer/<%= type %>/<%= id %>"
+  allowfullscreen
   referrerpolicy="no-referrer"
   loading="lazy"
   frameborder="0"
