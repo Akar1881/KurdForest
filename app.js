@@ -27,6 +27,24 @@ app.use((req, res) => {
   res.status(404).send('Page not found');
 });
 
+app.get("/cleanplayer/:type/:id/:season?/:episode?", async (req, res) => {
+  const { type, id, season = 1, episode = 1 } = req.params;
+  const target = type === "movie"
+    ? `https://vidlink.pro/movie/${id}`
+    : `https://vidlink.pro/tv/${id}/${season}/${episode}`;
+
+  const response = await fetch(target);
+  let html = await response.text();
+
+  // 🔒 strip known popup / ad scripts
+  html = html
+    .replace(/window\.open\s*\([^)]*\)/gi, "")
+    .replace(/<script[^>]*(ads|pop)[^>]*>.*?<\/script>/gis, "");
+
+  res.setHeader("Content-Type", "text/html");
+  res.send(html);
+});
+
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
 });
