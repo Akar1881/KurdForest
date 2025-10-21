@@ -26,34 +26,6 @@ app.use('/api', apiRoutes);
 app.use((req, res) => {
   res.status(404).send('Page not found');
 });
-  
-app.get("/cleanplayer/:type/:id/:season?/:episode?", async (req, res) => {
-  try {
-    const { type, id, season = 1, episode = 1 } = req.params;
-
-    // Build the vidlink URL
-    const target =
-      type === "movie"
-        ? `https://vidlink.pro/movie/${id}`
-        : `https://vidlink.pro/tv/${id}/${season}/${episode}`;
-
-    // Fetch the remote HTML
-    const response = await fetch(target);
-    let html = await response.text();
-
-    // Remove popup & ad scripts (basic cleaning)
-    html = html
-      .replace(/window\.open\s*\([^)]*\)/gi, "")
-      .replace(/<script[^>]*(ads|pop)[^>]*>.*?<\/script>/gis, "")
-      .replace(/onbeforeunload\s*=\s*[^;]+;/gi, "");
-
-    res.setHeader("Content-Type", "text/html");
-    res.send(html);
-  } catch (err) {
-    console.error("CleanPlayer error:", err);
-    res.status(500).send("<h3>Player temporarily unavailable.</h3>");
-  }
-});
 
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
