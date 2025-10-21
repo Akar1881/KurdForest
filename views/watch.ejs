@@ -1,196 +1,176 @@
-<!DOCTYPE html>  
-<html lang="en">  
-<head>  
-  <meta charset="UTF-8">  
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">  
-  <title><%= websiteName %> - <%= details.title || details.name %></title>  
-  <link rel="stylesheet" href="/css/global.css">  
-  <link rel="stylesheet" href="/css/watch.css">  
-</head>  
-<body>  
-  <%- include('partials/header') %>  
-  
-  <main class="main-content watch-page">  
-    <button onclick="history.back()" class="back-btn">  
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">  
-        <line x1="19" y1="12" x2="5" y2="12"></line>  
-        <polyline points="12 19 5 12 12 5"></polyline>  
-      </svg>  
-      Back  
-    </button>  
-  
-    <!-- Info Section -->  
-    <div class="info-section">  
-      <div class="info-poster">  
-        <% if (details.poster_path) { %>  
-          <img src="https://image.tmdb.org/t/p/w500<%= details.poster_path %>" alt="<%= details.title || details.name %>">  
-        <% } %>  
-      </div>  
-  
-      <div class="info-details">  
-        <h1 class="info-title"><%= details.title || details.name %></h1>  
-  
-        <div class="info-meta">  
-          <div class="info-rating">  
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="#0fa35a">  
-              <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>  
-            </svg>  
-            <span><%= details.vote_average ? details.vote_average.toFixed(1) : 'N/A' %></span>  
-          </div>  
-  
-          <div class="info-date">  
-            <%= details.release_date || details.first_air_date || 'N/A' %>  
-          </div>  
-  
-          <% if (details.runtime) { %>  
-            <div class="info-runtime"><%= details.runtime %> min</div>  
-          <% } %>  
-        </div>  
-  
-        <% if (details.genres && details.genres.length > 0) { %>  
-          <div class="info-genres">  
-            <% details.genres.forEach(genre => { %>  
-              <span class="genre-tag"><%= genre.name %></span>  
-            <% }) %>  
-          </div>  
-        <% } %>  
-  
-        <p class="info-overview"><%= details.overview || 'No overview available.' %></p>  
-      </div>  
-    </div>  
-  
-    <!-- Next Episode Alert -->  
-    <% if (nextEpisode) { %>  
-      <div class="next-episode-alert">  
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="#ff9800">  
-          <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"></path>  
-        </svg>  
-        <p>Next Episode: S<%= nextEpisode.season %>E<%= nextEpisode.episode %> - "<%= nextEpisode.title %>" airs on <%= nextEpisode.date %></p>  
-      </div>  
-    <% } %>  
-  
-    <br>  
-  
-    <div class="warning-alert">  
-  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">  
-    <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>  
-    <line x1="12" y1="9" x2="12" y2="13"></line>  
-    <line x1="12" y1="17" x2="12.01" y2="17"></line>  
-  </svg>  
-  <p id="adguard-message"></p>  
-</div>  
-  
-    <!-- Player Section -->  
-    <div class="watch-container">  
-      <div class="player-section">  
-        <div class="player-wrapper">  
-          <iframe  
-            id="player"  
-            src="<%= type === 'movie' ? `https://vidlink.pro/movie/${id}` : type === 'anime' ? `https://vidlink.pro/tv/${id}/1/1` : `https://vidlink.pro/tv/${id}/1/1` %>"  
-            allowfullscreen  
-            loading="lazy"  
-            frameborder="0"  
-          ></iframe>  
-        </div>  
-  
-        <% if (type === 'tv' || type === 'anime') { %>  
-          <div class="controls">  
-            <div class="control-group">  
-              <label for="season">Season:</label>  
-              <select id="season" class="control-select">  
-                <% if (details.seasons) { %>  
-                  <% details.seasons.forEach(season => { %>  
-                    <% if (season.season_number > 0) { %>  
-                      <option value="<%= season.season_number %>">Season <%= season.season_number %></option>  
-                    <% } %>  
-                  <% }) %>  
-                <% } else { %>  
-                  <option value="1">Season 1</option>  
-                <% } %>  
-              </select>  
-            </div>  
-  
-            <div class="control-group">  
-              <label for="episode">Episode:</label>  
-              <select id="episode" class="control-select">  
-                <option value="1">Episode 1</option>  
-              </select>  
-            </div>  
-          </div>  
-        <% } %>  
-      </div>  
-    </div>  
-  </main>  
-  
-  <%- include('partials/footer') %>  
-  
-  <% if (type === 'tv' || type === 'anime') { %>  
-    <script>  
-      const type = '<%= type %>';  
-      const id = '<%= id %>';  
-      const seasonSelect = document.getElementById('season');  
-      const episodeSelect = document.getElementById('episode');  
-      const player = document.getElementById('player');  
-      const message = document.getElementById('adguard-message');  
-  const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);  
-  
-  if (isMobile) {  
-    message.innerHTML = `  
-      We are not hosting any of the content — our streaming providers do, and they may include ads.   
-      For mobile users, we recommend using   
-      <a href="https://play.google.com/store/apps/details?id=com.brave.browser" target="_blank" style="color:#00a86b; font-weight:600; text-decoration:underline;">Brave Browser</a>  
-      or installing the   
-      <a href="https://adguard.com/en/adguard-android/overview.html" target="_blank" style="color:#00a86b; font-weight:600; text-decoration:underline;">AdGuard app</a>  
-      for better ad blocking.  
-    `;  
-  } else {  
-    message.innerHTML = `  
-      We are not hosting any of the content — our streaming providers do, and they may include ads.   
-      For a cleaner experience, we recommend installing the   
-      <a href="https://chromewebstore.google.com/detail/adguard-adblocker/bgnkhhnnamicmpeenaelnjfhikgbkllg" target="_blank" style="color:#00a86b; font-weight:600; text-decoration:underline;">AdGuard AdBlocker</a>  
-      extension on your browser.  
-    `;  
-  }  
-  
-      async function loadEpisodes(season) {  
-        try {  
-          const response = await fetch(`/api/episodes/${id}/${season}`);  
-          const data = await response.json();  
-  
-          episodeSelect.innerHTML = '';  
-          data.episodes.forEach(ep => {  
-            const option = document.createElement('option');  
-            option.value = ep.episode_number;  
-            option.textContent = `Episode ${ep.episode_number}${ep.name ? ': ' + ep.name : ''}`;  
-            episodeSelect.appendChild(option);  
-          });  
-  
-          updatePlayer();  
-        } catch (error) {  
-          console.error('Error loading episodes:', error);  
-        }  
-      }  
-  
-      function updatePlayer() {  
-        const season = seasonSelect.value;  
-        const episode = episodeSelect.value;  
-  
-        if (type === 'anime') {  
-            player.src = `https://vidlink.pro/tv/${id}/${season}/${episode}`;  
-          } else {  
-            player.src = `https://vidlink.pro/tv/${id}/${season}/${episode}`;  
-          }  
-      }  
-  
-      seasonSelect.addEventListener('change', () => {  
-        loadEpisodes(seasonSelect.value);  
-      });  
-  
-      episodeSelect.addEventListener('change', updatePlayer);  
-  
-      // Load first season episodes on page load  
-      loadEpisodes(seasonSelect.value);  
-    </script>  
-  <% } %>  
-</body>  
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= websiteName %> - <%= details.title || details.name %></title>
+  <link rel="stylesheet" href="/css/global.css">
+  <link rel="stylesheet" href="/css/watch.css">
+</head>
+<body>
+  <%- include('partials/header') %>
+
+  <main class="main-content watch-page">
+    <button onclick="history.back()" class="back-btn">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <line x1="19" y1="12" x2="5" y2="12"></line>
+        <polyline points="12 19 5 12 12 5"></polyline>
+      </svg>
+      Back
+    </button>
+
+    <!-- Info Section -->
+    <div class="info-section">
+      <div class="info-poster">
+        <% if (details.poster_path) { %>
+          <img src="https://image.tmdb.org/t/p/w500<%= details.poster_path %>" alt="<%= details.title || details.name %>">
+        <% } %>
+      </div>
+
+      <div class="info-details">
+        <h1 class="info-title"><%= details.title || details.name %></h1>
+
+        <div class="info-meta">
+          <div class="info-rating">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="#0fa35a">
+              <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+            </svg>
+            <span><%= details.vote_average ? details.vote_average.toFixed(1) : 'N/A' %></span>
+          </div>
+
+          <div class="info-date">
+            <%= details.release_date || details.first_air_date || 'N/A' %>
+          </div>
+
+          <% if (details.runtime) { %>
+            <div class="info-runtime"><%= details.runtime %> min</div>
+          <% } %>
+        </div>
+
+        <% if (details.genres && details.genres.length > 0) { %>
+          <div class="info-genres">
+            <% details.genres.forEach(genre => { %>
+              <span class="genre-tag"><%= genre.name %></span>
+            <% }) %>
+          </div>
+        <% } %>
+
+        <p class="info-overview"><%= details.overview || 'No overview available.' %></p>
+      </div>
+    </div>
+
+    <!-- Next Episode Alert -->
+    <% if (nextEpisode) { %>
+      <div class="next-episode-alert">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="#ff9800">
+          <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"></path>
+        </svg>
+        <p>Next Episode: S<%= nextEpisode.season %>E<%= nextEpisode.episode %> - "<%= nextEpisode.title %>" airs on <%= nextEpisode.date %></p>
+      </div>
+    <% } %>
+
+    <br>
+
+    <div class="warning-alert">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+        <line x1="12" y1="9" x2="12" y2="13"></line>
+        <line x1="12" y1="17" x2="12.01" y2="17"></line>
+      </svg>
+      <p>We are not hosting any of the content. Our streaming providers do it, so it may contain ads. Use Brave Browser for a better experience.</p>
+    </div>
+
+    <!-- Player Section -->
+    <div class="watch-container">
+      <div class="player-section">
+        <div class="player-wrapper">
+          <iframe
+            id="player"
+            src="<%= type === 'movie' ? `https://vidlink.pro/movie/${id}` : type === 'anime' ? `https://vidlink.pro/tv/${id}/1/1` : `https://vidlink.pro/tv/${id}/1/1` %>"
+            allowfullscreen
+            loading="lazy"
+            frameborder="0"
+          ></iframe>
+        </div>
+
+        <% if (type === 'tv' || type === 'anime') { %>
+          <div class="controls">
+            <div class="control-group">
+              <label for="season">Season:</label>
+              <select id="season" class="control-select">
+                <% if (details.seasons) { %>
+                  <% details.seasons.forEach(season => { %>
+                    <% if (season.season_number > 0) { %>
+                      <option value="<%= season.season_number %>">Season <%= season.season_number %></option>
+                    <% } %>
+                  <% }) %>
+                <% } else { %>
+                  <option value="1">Season 1</option>
+                <% } %>
+              </select>
+            </div>
+
+            <div class="control-group">
+              <label for="episode">Episode:</label>
+              <select id="episode" class="control-select">
+                <option value="1">Episode 1</option>
+              </select>
+            </div>
+          </div>
+        <% } %>
+      </div>
+    </div>
+  </main>
+
+  <%- include('partials/footer') %>
+
+  <% if (type === 'tv' || type === 'anime') { %>
+    <script>
+      const type = '<%= type %>';
+      const id = '<%= id %>';
+      const seasonSelect = document.getElementById('season');
+      const episodeSelect = document.getElementById('episode');
+      const player = document.getElementById('player');
+
+      async function loadEpisodes(season) {
+        try {
+          const response = await fetch(`/api/episodes/${id}/${season}`);
+          const data = await response.json();
+
+          episodeSelect.innerHTML = '';
+          data.episodes.forEach(ep => {
+            const option = document.createElement('option');
+            option.value = ep.episode_number;
+            option.textContent = `Episode ${ep.episode_number}${ep.name ? ': ' + ep.name : ''}`;
+            episodeSelect.appendChild(option);
+          });
+
+          updatePlayer();
+        } catch (error) {
+          console.error('Error loading episodes:', error);
+        }
+      }
+
+      function updatePlayer() {
+        const season = seasonSelect.value;
+        const episode = episodeSelect.value;
+
+        if (type === 'anime') {
+            player.src = `https://vidlink.pro/tv/${id}/${season}/${episode}`;
+          } else {
+            player.src = `https://vidlink.pro/tv/${id}/${season}/${episode}`;
+          }
+      }
+
+      seasonSelect.addEventListener('change', () => {
+        loadEpisodes(seasonSelect.value);
+      });
+
+      episodeSelect.addEventListener('change', updatePlayer);
+
+      // Load first season episodes on page load
+      loadEpisodes(seasonSelect.value);
+    </script>
+  <% } %>
+</body>
 </html>
