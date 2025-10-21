@@ -77,7 +77,7 @@
         <line x1="12" y1="9" x2="12" y2="13"></line>
         <line x1="12" y1="17" x2="12.01" y2="17"></line>
       </svg>
-      <p>We are not hosting any of the content. Our streaming providers do it, so it may contain ads. Use Brave Browser or <a href="https://chromewebstore.google.com/detail/adguard-adblocker/bgnkhhnnamicmpeenaelnjfhikgbkllg">AdGuard</a>for a better experience.</p>
+      <p>We are not hosting any of the content. Our streaming providers do it, so it may contain ads. Use Brave Browser or <a href="https://chromewebstore.google.com/detail/adguard-adblocker/bgnkhhnnamicmpeenaelnjfhikgbkllg">AdGuard</a> for a better experience.</p>
     </div>
 
     <!-- Player Section -->
@@ -85,9 +85,9 @@
       <div class="player-section">
         <div class="player-wrapper">
           <iframe
-  src="/cleanplayer/<%= type %>/<%= id %>"
+  id="player"
+  src="<%= type === 'movie' ? `https://vidlink.pro/movie/${id}` : type === 'anime' ? `https://vidlink.pro/tv/${id}/1/1` : `https://vidlink.pro/tv/${id}/1/1` %>"
   allowfullscreen
-  referrerpolicy="no-referrer"
   loading="lazy"
   frameborder="0"
 ></iframe>
