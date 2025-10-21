@@ -61,10 +61,32 @@
   margin-bottom: 2rem;
 }
 
-.watch-alert a {
+.warning-alert a {
   color: #04BAF2;
   font-family: sans-serif;
   font-weight: bold;
+  text-decoration: none;
+  position: relative;
+  transition: color 0.3s ease;
+}
+
+.warning-alert a::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: -2px;
+  width: 0%;
+  height: 2px;
+  background-color: #04BAF2;
+  transition: width 0.3s ease;
+}
+
+.warning-alert a:hover {
+  color: #0299c9; /* slightly darker blue when hovering */
+}
+
+.warning-alert a:hover::after {
+  width: 100%;
 }
 
 .warning-alert svg {
