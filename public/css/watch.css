@@ -61,6 +61,12 @@
   margin-bottom: 2rem;
 }
 
+.watch-alert a {
+  color: #04BAF2;
+  font-family: sans-serif;
+  font-weight: bold;
+}
+
 .warning-alert svg {
   flex-shrink: 0;
   color: #ffc107;
