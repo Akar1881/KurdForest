@@ -26,23 +26,33 @@ app.use('/api', apiRoutes);
 app.use((req, res) => {
   res.status(404).send('Page not found');
 });
-
+  
 app.get("/cleanplayer/:type/:id/:season?/:episode?", async (req, res) => {
-  const { type, id, season = 1, episode = 1 } = req.params;
-  const target = type === "movie"
-    ? `https://vidlink.pro/movie/${id}`
-    : `https://vidlink.pro/tv/${id}/${season}/${episode}`;
+  try {
+    const { type, id, season = 1, episode = 1 } = req.params;
 
-  const response = await fetch(target);
-  let html = await response.text();
+    // Build the vidlink URL
+    const target =
+      type === "movie"
+        ? `https://vidlink.pro/movie/${id}`
+        : `https://vidlink.pro/tv/${id}/${season}/${episode}`;
 
-  // 🔒 strip known popup / ad scripts
-  html = html
-    .replace(/window\.open\s*\([^)]*\)/gi, "")
-    .replace(/<script[^>]*(ads|pop)[^>]*>.*?<\/script>/gis, "");
+    // Fetch the remote HTML
+    const response = await fetch(target);
+    let html = await response.text();
 
-  res.setHeader("Content-Type", "text/html");
-  res.send(html);
+    // Remove popup & ad scripts (basic cleaning)
+    html = html
+      .replace(/window\.open\s*\([^)]*\)/gi, "")
+      .replace(/<script[^>]*(ads|pop)[^>]*>.*?<\/script>/gis, "")
+      .replace(/onbeforeunload\s*=\s*[^;]+;/gi, "");
+
+    res.setHeader("Content-Type", "text/html");
+    res.send(html);
+  } catch (err) {
+    console.error("CleanPlayer error:", err);
+    res.status(500).send("<h3>Player temporarily unavailable.</h3>");
+  }
 });
 
 app.listen(PORT, () => {
