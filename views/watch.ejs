@@ -71,13 +71,14 @@
 
     <br>
 
+    <!-- Warning Alert -->
     <div class="warning-alert">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
         <line x1="12" y1="9" x2="12" y2="13"></line>
         <line x1="12" y1="17" x2="12.01" y2="17"></line>
       </svg>
-      <p>We are not hosting any of the content. Our streaming providers do it, so it may contain ads. Use Brave Browser for a better experience.</p>
+      <p id="adguard-message"></p>
     </div>
 
     <!-- Player Section -->
@@ -86,7 +87,7 @@
         <div class="player-wrapper">
           <iframe
             id="player"
-            src="<%= type === 'movie' ? `https://vidlink.pro/movie/${id}` : type === 'anime' ? `https://vidlink.pro/tv/${id}/1/1` : `https://vidlink.pro/tv/${id}/1/1` %>"
+            src="<%= type === 'movie' ? `https://vidlink.pro/movie/${id}` : `https://vidlink.pro/tv/${id}/1/1` %>"
             allowfullscreen
             loading="lazy"
             frameborder="0"
@@ -131,7 +132,47 @@
       const seasonSelect = document.getElementById('season');
       const episodeSelect = document.getElementById('episode');
       const player = document.getElementById('player');
+      const message = document.getElementById('adguard-message');
 
+      // --- ADGUARD / BRAVE RECOMMENDATION BASED ON SCREEN WIDTH ---
+      function setAdguardMessage() {
+        const screenWidth = window.innerWidth;
+
+        if (screenWidth <= 764) {
+          // Mobile
+          message.innerHTML = `
+            We are not hosting any of the content — our streaming providers do, and they may include ads. 
+            For mobile users, we recommend using 
+            <a href="https://play.google.com/store/apps/details?id=com.brave.browser" target="_blank" style="color:#00a86b; font-weight:600; text-decoration:underline;">Brave Browser</a>
+            or installing the 
+            <a href="https://adguard.com/en/adguard-android/overview.html" target="_blank" style="color:#00a86b; font-weight:600; text-decoration:underline;">AdGuard app</a>
+            for better ad blocking.
+          `;
+        } else if (screenWidth >= 1024) {
+          // Desktop
+          message.innerHTML = `
+            We are not hosting any of the content — our streaming providers do, and they may include ads. 
+            For a cleaner experience, we recommend installing the 
+            <a href="https://chromewebstore.google.com/detail/adguard-adblocker/bgnkhhnnamicmpeenaelnjfhikgbkllg" target="_blank" style="color:#00a86b; font-weight:600; text-decoration:underline;">AdGuard AdBlocker</a>
+            extension on your browser.
+          `;
+        } else {
+          // Tablet
+          message.innerHTML = `
+            We are not hosting any of the content — our streaming providers do, and they may include ads. 
+            For a smoother experience, we recommend using 
+            <a href="https://play.google.com/store/apps/details?id=com.brave.browser" target="_blank" style="color:#00a86b; font-weight:600; text-decoration:underline;">Brave Browser</a>
+            or 
+            <a href="https://adguard.com/en/adguard-android/overview.html" target="_blank" style="color:#00a86b; font-weight:600; text-decoration:underline;">AdGuard</a>.
+          `;
+        }
+      }
+
+      // Run on load and on resize (dynamic adjustment)
+      window.addEventListener('load', setAdguardMessage);
+      window.addEventListener('resize', setAdguardMessage);
+
+      // --- EPISODE HANDLING ---
       async function loadEpisodes(season) {
         try {
           const response = await fetch(`/api/episodes/${id}/${season}`);
@@ -154,21 +195,13 @@
       function updatePlayer() {
         const season = seasonSelect.value;
         const episode = episodeSelect.value;
-
-        if (type === 'anime') {
-            player.src = `https://vidlink.pro/tv/${id}/${season}/${episode}`;
-          } else {
-            player.src = `https://vidlink.pro/tv/${id}/${season}/${episode}`;
-          }
+        player.src = `https://vidlink.pro/tv/${id}/${season}/${episode}`;
       }
 
-      seasonSelect.addEventListener('change', () => {
-        loadEpisodes(seasonSelect.value);
-      });
-
+      seasonSelect.addEventListener('change', () => loadEpisodes(seasonSelect.value));
       episodeSelect.addEventListener('change', updatePlayer);
 
-      // Load first season episodes on page load
+      // Load first season episodes
       loadEpisodes(seasonSelect.value);
     </script>
   <% } %>
