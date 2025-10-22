@@ -10,16 +10,23 @@
   <link rel="stylesheet" href="/css/global2.css">
   <link rel="stylesheet" href="/css/index.css">
 
-  <!-- Favicons -->
-  <link rel="icon" type="image/png" href="/favicon.png">
-  <link rel="shortcut icon" type="image/png" href="/favicon.png">
+  <!-- Favicons (Google prefers root .ico) -->
+  <link rel="icon" href="/favicon.ico" type="image/x-icon">
+  <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+  <link rel="icon" href="/favicon.png" type="image/png"> <!-- fallback for browsers -->
 
-  <!-- Open Graph (for Discord, Telegram, etc.) -->
+  <!-- Open Graph / Social -->
   <meta property="og:title" content="<%= websiteName %> - Watch Movies & TV Shows">
   <meta property="og:description" content="Your Ultimate Streaming Database">
   <meta property="og:image" content="https://kurdforest.xyz/logo.png">
   <meta property="og:url" content="https://kurdforest.xyz">
   <meta name="theme-color" content="#04BAF2">
+
+  <!-- Twitter Cards -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="<%= websiteName %> - Watch Movies & TV Shows">
+  <meta name="twitter:description" content="Your Ultimate Streaming Database">
+  <meta name="twitter:image" content="https://kurdforest.xyz/logo.png">
 </head>
 <body>
   <%- include('partials/header') %>
