@@ -320,7 +320,7 @@
   }
 }
 
-/* Cast Section */
+/* Cast Section - Horizontal Layout */
 .cast-section {
   margin: 2rem 0;
   padding: 1.5rem;
@@ -339,14 +339,42 @@
   padding-bottom: 0.5rem;
 }
 
-.cast-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+.cast-scroll-container {
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding-bottom: 1rem;
+  margin: 0 -0.5rem;
+}
+
+.cast-scroll-container::-webkit-scrollbar {
+  height: 8px;
+}
+
+.cast-scroll-container::-webkit-scrollbar-track {
+  background: rgba(15, 163, 90, 0.1);
+  border-radius: 4px;
+}
+
+.cast-scroll-container::-webkit-scrollbar-thumb {
+  background: var(--forest-green);
+  border-radius: 4px;
+}
+
+.cast-scroll-container::-webkit-scrollbar-thumb:hover {
+  background: rgba(15, 163, 90, 0.8);
+}
+
+.cast-row {
+  display: flex;
   gap: 1.5rem;
-  width: 100%;
+  padding: 0 0.5rem;
+  width: max-content;
+  min-width: 100%;
 }
 
 .cast-card {
+  flex: 0 0 auto;
+  width: 150px;
   display: flex;
   flex-direction: column;
   background: rgba(255, 255, 255, 0.02);
@@ -397,6 +425,7 @@
   display: flex;
   flex-direction: column;
   gap: 0.25rem;
+  min-height: 80px;
 }
 
 .cast-name {
@@ -405,6 +434,10 @@
   color: var(--white);
   margin: 0;
   line-height: 1.3;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 .cast-character {
@@ -413,29 +446,30 @@
   margin: 0;
   line-height: 1.3;
   font-weight: 500;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
-/* Responsive Cast Grid */
-@media (max-width: 1200px) {
-  .cast-grid {
-    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-    gap: 1.25rem;
-  }
-}
-
+/* Responsive Horizontal Cast */
 @media (max-width: 768px) {
   .cast-section {
     margin: 1.5rem 0;
     padding: 1rem;
   }
   
-  .cast-grid {
-    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  .cast-row {
     gap: 1rem;
+  }
+  
+  .cast-card {
+    width: 130px;
   }
   
   .cast-info {
     padding: 0.75rem;
+    min-height: 70px;
   }
   
   .cast-name {
@@ -448,12 +482,36 @@
 }
 
 @media (max-width: 480px) {
-  .cast-grid {
-    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+  .cast-card {
+    width: 120px;
+  }
+  
+  .cast-row {
     gap: 0.75rem;
   }
   
   .cast-info {
     padding: 0.5rem;
+    min-height: 65px;
+  }
+  
+  .cast-name {
+    font-size: 0.8rem;
+  }
+  
+  .cast-character {
+    font-size: 0.7rem;
+  }
+}
+
+/* Hide scrollbar for mobile but keep functionality */
+@media (max-width: 768px) {
+  .cast-scroll-container {
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  
+  .cast-scroll-container::-webkit-scrollbar {
+    display: none;
   }
 }
