@@ -146,12 +146,19 @@ router.get('/watch/:type/:id', async (req, res) => {
     if (type === 'movie') {
       endpoint = `/movie/${id}`;
     } else if (type === 'tv' || type === 'anime') {
-      endpoint = `/tv/${id}`; // TMDB treats anime as TV shows
+      endpoint = `/tv/${id}`;
     } else {
       return res.status(400).send('Invalid type');
     }
 
-    const details = await fetchTMDB(endpoint);
+    // Fetch details with credits (cast information)
+    const [details, credits] = await Promise.all([
+      fetchTMDB(endpoint),
+      fetchTMDB(`${endpoint}/credits`) // Fetch cast information
+    ]);
+
+    // Add credits to details object
+    details.credits = credits;
 
     // Next episode info
     let nextEpisode = null;
@@ -170,7 +177,7 @@ router.get('/watch/:type/:id', async (req, res) => {
     }
 
     res.render('watch', {
-      type,       // 'movie', 'tv', 'anime'
+      type,
       id,
       details,
       nextEpisode
