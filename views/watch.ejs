@@ -63,30 +63,32 @@
 <% if (details.credits && details.credits.cast && details.credits.cast.length > 0) { %>
   <div class="cast-section">
     <h2 class="cast-title">Cast</h2>
-    <div class="cast-grid">
-      <% details.credits.cast.slice(0, 12).forEach(person => { %>
-        <div class="cast-card">
-          <div class="cast-photo">
-            <% if (person.profile_path) { %>
-              <img 
-                src="https://image.tmdb.org/t/p/w200<%= person.profile_path %>" 
-                alt="<%= person.name %>"
-                loading="lazy"
-              >
-            <% } else { %>
-              <div class="cast-placeholder">
-                <svg width="40" height="40" viewBox="0 0 24 24" fill="rgba(255,255,255,0.3)">
-                  <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
-                </svg>
-              </div>
-            <% } %>
+    <div class="cast-scroll-container">
+      <div class="cast-row">
+        <% details.credits.cast.slice(0, 20).forEach(person => { %>
+          <div class="cast-card">
+            <div class="cast-photo">
+              <% if (person.profile_path) { %>
+                <img 
+                  src="https://image.tmdb.org/t/p/w200<%= person.profile_path %>" 
+                  alt="<%= person.name %>"
+                  loading="lazy"
+                >
+              <% } else { %>
+                <div class="cast-placeholder">
+                  <svg width="40" height="40" viewBox="0 0 24 24" fill="rgba(255,255,255,0.3)">
+                    <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                  </svg>
+                </div>
+              <% } %>
+            </div>
+            <div class="cast-info">
+              <h3 class="cast-name"><%= person.name %></h3>
+              <p class="cast-character"><%= person.character %></p>
+            </div>
           </div>
-          <div class="cast-info">
-            <h3 class="cast-name"><%= person.name %></h3>
-            <p class="cast-character"><%= person.character %></p>
-          </div>
-        </div>
-      <% }) %>
+        <% }) %>
+      </div>
     </div>
   </div>
 <% } %>
