@@ -28,6 +28,28 @@ border-left: 4px solid var(--forest-green);
 text-shadow: 0 0 20px rgba(15, 163, 90, 0.3);
 }
 
+.announcement {
+  background-color: #1a2634;
+  padding: 2rem;
+  margin-bottom: 3rem;
+  border-radius: 16px;
+  text-align: center;
+  box-shadow: 0 5px 25px rgba(15, 163, 90, 0.2);
+}
+
+.announcement-title {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: #fff;
+  margin-bottom: 0.5rem;
+  text-shadow: 0 0 15px rgba(15, 163, 90, 0.3);
+}
+
+.announcement-text {
+  font-size: 1.1rem;
+  color: #b0b0b0;
+}
+
 @media (max-width: 768px) {
 .hero {
 height: 250px;
