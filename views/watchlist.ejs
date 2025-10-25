@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= owner %>'s Watchlist</title>
+    <link rel="stylesheet" href="/css/profile.css">
+    <link rel="stylesheet" href="/css/global.css"> 
+</head>
+<body>
+    <%- include('partials/header') %>
+
+    <main class="container">
+        <h1><%= owner %>'s Watchlist</h1>
+
+        <div class="watchlist-section">
+            <h2>Movies</h2>
+            <% if (movies.length > 0) { %>
+                <div class="watchlist-grid">
+                    <% movies.forEach(movie => { %>
+                        <a href="/watch/<%= movie.media_type %>/<%= movie.tmdbId %>" class="card-link">
+                            <div class="card">
+                                <img src="https://image.tmdb.org/t/p/w500<%= movie.poster_path %>" alt="<%= movie.title %> Poster">
+                                <div class="card-title"><%= movie.title %></div>
+                            </div>
+                        </a>
+                    <% }) %>
+                </div>
+            <% } else { %>
+                <p><%= owner %> hasn't added any movies to their watchlist yet.</p>
+            <% } %>
+        </div>
+
+        <div class="watchlist-section">
+            <h2>TV Shows</h2>
+            <% if (tvShows.length > 0) { %>
+                <div class="watchlist-grid">
+                    <% tvShows.forEach(show => { %>
+                        <a href="/watch/<%= show.media_type %>/<%= show.tmdbId %>" class="card-link">
+                            <div class="card">
+                                <img src="https://image.tmdb.org/t/p/w500<%= show.poster_path %>" alt="<%= show.title %> Poster">
+                                <div class="card-title"><%= show.title %></div>
+                            </div>
+                        </a>
+                    <% }) %>
+                </div>
+            <% } else { %>
+                <p><%= owner %> hasn't added any TV shows to their watchlist yet.</p>
+            <% } %>
+        </div>
+
+        <div class="watchlist-section">
+            <h2>Anime</h2>
+            <% if (animes.length > 0) { %>
+                <div class="watchlist-grid">
+                    <% animes.forEach(anime => { %>
+                        <a href="/watch/<%= anime.media_type %>/<%= anime.tmdbId %>" class="card-link">
+                            <div class="card">
+                                <img src="https://image.tmdb.org/t/p/w500<%= anime.poster_path %>" alt="<%= anime.title %> Poster">
+                                <div class="card-title"><%= anime.title %></div>
+                            </div>
+                        </a>
+                    <% }) %>
+                </div>
+            <% } else { %>
+                <p><%= owner %> hasn't added any anime to their watchlist yet.</p>
+            <% } %>
+        </div>
+    </main>
+
+    <%- include('partials/footer') %>
+</body>
+</html>

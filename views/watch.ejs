@@ -54,44 +54,42 @@
             <% }) %>
           </div>
         <% } %>
+        
+        <button class="add-watchlist-btn" data-tmdb-id="<%= id %>" data-media-type="<%= type %>">Add to Watchlist</button>
 
         <p class="info-overview"><%= details.overview || 'No overview available.' %></p>
       </div>
     </div>
 
     <!-- Cast Section -->
-<% if (details.credits && details.credits.cast && details.credits.cast.length > 0) { %>
-  <div class="cast-section">
-    <h2 class="cast-title">Cast</h2>
-    <div class="cast-scroll-container">
-      <div class="cast-row">
-        <% details.credits.cast.slice(0, 20).forEach(person => { %>
-          <div class="cast-card">
-            <div class="cast-photo">
-              <% if (person.profile_path) { %>
-                <img 
-                  src="https://image.tmdb.org/t/p/w200<%= person.profile_path %>" 
-                  alt="<%= person.name %>"
-                  loading="lazy"
-                >
-              <% } else { %>
-                <div class="cast-placeholder">
-                  <svg width="40" height="40" viewBox="0 0 24 24" fill="rgba(255,255,255,0.3)">
-                    <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
-                  </svg>
+    <% if (details.credits && details.credits.cast && details.credits.cast.length > 0) { %>
+      <div class="cast-section">
+        <h2 class="cast-title">Cast</h2>
+        <div class="cast-scroll-container">
+          <div class="cast-row">
+            <% details.credits.cast.slice(0, 20).forEach(person => { %>
+              <div class="cast-card">
+                <div class="cast-photo">
+                  <% if (person.profile_path) { %>
+                    <img src="https://image.tmdb.org/t/p/w200<%= person.profile_path %>" alt="<%= person.name %>" loading="lazy">
+                  <% } else { %>
+                    <div class="cast-placeholder">
+                      <svg width="40" height="40" viewBox="0 0 24 24" fill="rgba(255,255,255,0.3)">
+                        <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                      </svg>
+                    </div>
+                  <% } %>
                 </div>
-              <% } %>
-            </div>
-            <div class="cast-info">
-              <h3 class="cast-name"><%= person.name %></h3>
-              <p class="cast-character"><%= person.character %></p>
-            </div>
+                <div class="cast-info">
+                  <h3 class="cast-name"><%= person.name %></h3>
+                  <p class="cast-character"><%= person.character %></p>
+                </div>
+              </div>
+            <% }) %>
           </div>
-        <% }) %>
+        </div>
       </div>
-    </div>
-  </div>
-<% } %>
+    <% } %>
 
     <!-- Next Episode Alert -->
     <% if (nextEpisode) { %>
@@ -114,17 +112,46 @@
       <p>We are not hosting any of the content. Our streaming providers do it, so it may contain ads. Use Brave Browser or <a href="https://chromewebstore.google.com/detail/adguard-adblocker/bgnkhhnnamicmpeenaelnjfhikgbkllg">AdGuard</a> for a better experience.</p>
     </div>
 
+    <!-- Comments Section -->
+    <div class="comments-section">
+      <h2 class="comments-title">User Feedback</h2>
+
+      <% if (locals.user) { %>
+        <div class="comment-form-container">
+          <form id="comment-form" class="comment-form">
+            <textarea id="comment-input" placeholder="Share your thoughts about this <%= type %>..." required maxlength="500"></textarea>
+            <button type="submit" class="comment-submit-btn">Post Comment</button>
+          </form>
+        </div>
+      <% } else { %>
+        <p class="login-prompt">Please <a href="/login">login</a> to leave a comment.</p>
+      <% } %>
+
+      <div id="comments-list" class="comments-list"></div>
+      <div id="comments-pagination" class="comments-pagination"></div>
+    </div>
+
     <!-- Player Section -->
     <div class="watch-container">
       <div class="player-section">
         <div class="player-wrapper">
+          <div id="watch-overlay" class="watch-overlay">
+            <button id="watch-btn" class="watch-btn">Watch</button>
+            <div id="subtitle-progress" class="subtitle-progress" style="display: none;">
+              <div class="progress-bar">
+                <div id="progress-fill" class="progress-fill"></div>
+              </div>
+              <p id="progress-text" class="progress-text">Preparing...</p>
+            </div>
+          </div>
           <iframe
-  id="player"
-  src="<%= type === 'movie' ? `https://vidlink.pro/movie/${id}` : type === 'anime' ? `https://vidlink.pro/tv/${id}/1/1` : `https://vidlink.pro/tv/${id}/1/1` %>"
-  allowfullscreen
-  loading="lazy"
-  frameborder="0"
-></iframe>
+            id="player"
+            src=""
+            allowfullscreen
+            loading="lazy"
+            frameborder="0"
+            style="display: none;"
+          ></iframe>
         </div>
 
         <% if (type === 'tv' || type === 'anime') { %>
@@ -158,17 +185,279 @@
 
   <%- include('partials/footer') %>
 
+  <!-- Comments Script -->
+  <script>
+    const tmdbId = '<%= id %>';
+    const mediaType = '<%= type %>';
+    let currentPage = 1;
+    const isLoggedIn = <%= locals.user ? 'true' : 'false' %>;
+    const currentUserId = '<%= locals.user ? locals.user.id : "" %>';
+
+    async function loadComments(page = 1) {
+      try {
+        const response = await fetch(`/api/comments/${tmdbId}?page=${page}`);
+        const { comments, currentPage: cp, totalPages } = await response.json();
+
+        const commentsList = document.getElementById('comments-list');
+        commentsList.innerHTML = '';
+
+        if (comments.length === 0) {
+          commentsList.innerHTML = '<p class="no-comments">No comments yet. Be the first to share your thoughts!</p>';
+        } else {
+          comments.forEach(comment => {
+            const commentCard = document.createElement('div');
+            commentCard.className = 'comment-card';
+
+            const canDelete = isLoggedIn && comment.user_id === currentUserId;
+
+            commentCard.innerHTML = `
+              <div class="comment-header">
+                <img src="${comment.profile_picture || '/images/banner.png'}" alt="${comment.username}" class="comment-avatar">
+                <div class="comment-meta">
+                  <span class="comment-username">${comment.username}</span>
+                  <span class="comment-date">${new Date(comment.created_at).toLocaleDateString()}</span>
+                </div>
+                ${canDelete ? `<button class="delete-comment-btn" data-id="${comment._id}">Delete</button>` : ''}
+              </div>
+              <div class="comment-content">${comment.comment}</div>
+            `;
+
+            commentsList.appendChild(commentCard);
+          });
+
+          document.querySelectorAll('.delete-comment-btn').forEach(btn => {
+            btn.addEventListener('click', async (e) => {
+              const commentId = e.target.dataset.id;
+              if (confirm('Delete this comment?')) {
+                try {
+                  const response = await fetch(`/api/comments/delete/${commentId}`, {
+                    method: 'DELETE'
+                  });
+                  if (response.ok) {
+                    loadComments(currentPage);
+                  }
+                } catch (error) {
+                  console.error('Error deleting comment:', error);
+                }
+              }
+            });
+          });
+        }
+
+        // Pagination
+        const pagination = document.getElementById('comments-pagination');
+        pagination.innerHTML = '';
+
+        if (totalPages > 1) {
+          if (cp > 1) {
+            const prevBtn = document.createElement('button');
+            prevBtn.textContent = 'Previous';
+            prevBtn.className = 'pagination-btn';
+            prevBtn.onclick = () => loadComments(cp - 1);
+            pagination.appendChild(prevBtn);
+          }
+
+          const pageInfo = document.createElement('span');
+          pageInfo.textContent = `Page ${cp} of ${totalPages}`;
+          pageInfo.className = 'pagination-info';
+          pagination.appendChild(pageInfo);
+
+          if (cp < totalPages) {
+            const nextBtn = document.createElement('button');
+            nextBtn.textContent = 'Next';
+            nextBtn.className = 'pagination-btn';
+            nextBtn.onclick = () => loadComments(cp + 1);
+            pagination.appendChild(nextBtn);
+          }
+        }
+
+        currentPage = cp;
+      } catch (error) {
+        console.error('Error loading comments:', error);
+      }
+    }
+
+    if (isLoggedIn) {
+      document.getElementById('comment-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const commentInput = document.getElementById('comment-input');
+        const comment = commentInput.value.trim();
+        if (!comment) return;
+
+        try {
+          const response = await fetch('/api/comments/add', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ tmdbId, mediaType, comment })
+          });
+
+          const result = await response.json();
+
+          if (response.ok) {
+            commentInput.value = '';
+            loadComments(1);
+          } else {
+            alert(result.error || 'Failed to post comment');
+          }
+        } catch (error) {
+          console.error('Error posting comment:', error);
+          alert('An error occurred while posting your comment.');
+        }
+      });
+    }
+
+    loadComments();
+  </script>
+
+  <!-- Watchlist Script -->
+  <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+      const watchlistBtn = document.querySelector('.add-watchlist-btn');
+      const tmdbId = watchlistBtn.dataset.tmdbId;
+      const mediaType = watchlistBtn.dataset.mediaType;
+
+      try {
+        const checkResponse = await fetch(`/api/watchlist/check/${tmdbId}`);
+        if (checkResponse.ok) {
+          const { inWatchlist } = await checkResponse.json();
+          watchlistBtn.textContent = inWatchlist ? 'Remove from Watchlist' : 'Add to Watchlist';
+        } else {
+          watchlistBtn.textContent = 'Add to Watchlist';
+        }
+      } catch (error) {
+        console.error('Error checking watchlist:', error);
+        watchlistBtn.textContent = 'Add to Watchlist';
+      }
+
+      watchlistBtn.addEventListener('click', async () => {
+        const currentAction = watchlistBtn.textContent.includes('Add') ? 'add' : 'remove';
+        try {
+          const response = await fetch(`/api/watchlist/${currentAction}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ tmdbId, media_type: mediaType })
+          });
+
+          if (response.ok) {
+            const originalText = watchlistBtn.textContent;
+            watchlistBtn.textContent = currentAction === 'add' ? 'Added!' : 'Removed!';
+            setTimeout(() => { watchlistBtn.textContent = originalText; }, 2000);
+          } else {
+            const result = await response.json();
+            alert(result.message || 'An error occurred.');
+          }
+        } catch (error) {
+          console.error('Error with watchlist:', error);
+          alert('An error occurred. Please try again.');
+        }
+      });
+    });
+  </script>
+
+  <!-- Watch Button and Subtitle Script -->
+<script>
+  const contentType = '<%= type %>';
+  const contentId = '<%= id %>';
+  const watchBtn = document.getElementById('watch-btn');
+  const watchOverlay = document.getElementById('watch-overlay');
+  const subtitleProgress = document.getElementById('subtitle-progress');
+  const progressFill = document.getElementById('progress-fill');
+  const progressText = document.getElementById('progress-text');
+  const player = document.getElementById('player');
+
+  let currentSeason = 1;
+  let currentEpisode = 1;
+
+  async function fetchSubtitle(tmdbId, type, season = null, episode = null) {
+    try {
+      progressText.textContent = 'Fetching subtitle...';
+      progressFill.style.width = '25%';
+
+      const response = await fetch('/subtitle/fetch', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ tmdbId, type, season, episode })
+      });
+
+      const result = await response.json();
+      if (!result.success) throw new Error(result.error || 'Failed to fetch subtitle');
+
+      progressText.textContent = result.fromCache ? 'Loaded from cache!' : 'Translating subtitle...';
+      progressFill.style.width = '100%';
+      await new Promise(resolve => setTimeout(resolve, 500));
+
+      return result.subtitleUrl;
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  function buildPlayerUrl(subtitleUrl) {
+    const baseUrl = contentType === 'movie'
+      ? `https://vidlink.pro/movie/${contentId}`
+      : `https://vidlink.pro/tv/${contentId}/${currentSeason}/${currentEpisode}`;
+
+    const params = new URLSearchParams({
+      primaryColor: '63b8bc',
+      secondaryColor: 'a2a2a2',
+      iconColor: 'eefdec',
+      icons: 'default',
+      player: 'default',
+      title: 'true',
+      poster: 'true',
+      autoplay: 'true',
+      nextbutton: 'false'
+    });
+
+    if (subtitleUrl) {
+      const fullSubUrl = `https://beta.kurdforest.xyz${subtitleUrl}`;
+      params.append('sub_file', fullSubUrl);
+      params.append('sub_label', 'Kurdish');
+    }
+
+    return `${baseUrl}?${params.toString()}`;
+  }
+
+  async function startWatching() {
+    watchBtn.style.display = 'none';
+    subtitleProgress.style.display = 'block';
+
+    try {
+      let subtitleUrl = null;
+      if (contentType === 'movie') {
+        subtitleUrl = await fetchSubtitle(contentId, 'movie');
+      } else {
+        subtitleUrl = await fetchSubtitle(contentId, 'tv', currentSeason, currentEpisode);
+      }
+
+      await new Promise(resolve => setTimeout(resolve, 500));
+      player.src = buildPlayerUrl(subtitleUrl);
+      player.style.display = 'block';
+      watchOverlay.style.display = 'none';
+    } catch (error) {
+      progressFill.style.backgroundColor = '#f44336';
+      progressFill.style.width = '100%';
+      progressText.textContent = 'Subtitle not found. Starting without subtitles...';
+      setTimeout(() => {
+        player.src = buildPlayerUrl(null);
+        player.style.display = 'block';
+        watchOverlay.style.display = 'none';
+      }, 1500);
+    }
+  }
+
+  watchBtn.addEventListener('click', startWatching);
+</script>
+
+  <!-- TV/Anime Episodes Script -->
   <% if (type === 'tv' || type === 'anime') { %>
     <script>
-      const type = '<%= type %>';
-      const id = '<%= id %>';
       const seasonSelect = document.getElementById('season');
       const episodeSelect = document.getElementById('episode');
-      const player = document.getElementById('player');
 
       async function loadEpisodes(season) {
         try {
-          const response = await fetch(`/api/episodes/${id}/${season}`);
+          const response = await fetch(`/api/episodes/${contentId}/${season}`);
           const data = await response.json();
 
           episodeSelect.innerHTML = '';
@@ -179,30 +468,29 @@
             episodeSelect.appendChild(option);
           });
 
-          updatePlayer();
+          updatePlayerForNewEpisode();
         } catch (error) {
           console.error('Error loading episodes:', error);
         }
       }
 
-      function updatePlayer() {
-        const season = seasonSelect.value;
-        const episode = episodeSelect.value;
+      function updatePlayerForNewEpisode() {
+        currentSeason = parseInt(seasonSelect.value);
+        currentEpisode = parseInt(episodeSelect.value);
 
-        if (type === 'anime') {
-            player.src = `https://vidlink.pro/tv/${id}/${season}/${episode}`;
-          } else {
-            player.src = `https://vidlink.pro/tv/${id}/${season}/${episode}`;
-          }
+        watchOverlay.style.display = 'flex';
+        player.style.display = 'none';
+        player.src = '';
+        watchBtn.style.display = 'block';
+        subtitleProgress.style.display = 'none';
+        progressFill.style.width = '0%';
+        progressFill.style.backgroundColor = '#0fa35a';
+        progressText.textContent = 'Preparing...';
       }
 
-      seasonSelect.addEventListener('change', () => {
-        loadEpisodes(seasonSelect.value);
-      });
+      seasonSelect.addEventListener('change', () => loadEpisodes(seasonSelect.value));
+      episodeSelect.addEventListener('change', updatePlayerForNewEpisode);
 
-      episodeSelect.addEventListener('change', updatePlayer);
-
-      // Load first season episodes on page load
       loadEpisodes(seasonSelect.value);
     </script>
   <% } %>

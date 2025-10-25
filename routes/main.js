@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const fetch = require('node-fetch');
+const User = require('../models/user');
 
 const TMDB_KEY = process.env.TMDB_KEY;
 const TMDB_BASE = 'https://api.themoviedb.org/3';
@@ -187,6 +188,18 @@ router.get('/watch/:type/:id', async (req, res) => {
     console.error('Watch page error:', error);
     res.status(500).send('Error loading watch page');
   }
+});
+
+router.get('/watchlist', async (req, res) => {
+    if (!req.session.userId) {
+        return res.redirect('/login');
+    }
+    try {
+        const user = await User.findById(req.session.userId).populate('watchlist');
+        res.render('watchlist', { watchlist: user.watchlist });
+    } catch (error) {
+        res.status(500).send('Error loading watchlist');
+    }
 });
 
 module.exports = router;

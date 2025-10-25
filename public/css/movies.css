@@ -1,47 +1,48 @@
 .page-header {
-  margin-bottom: 2rem;
+  margin-bottom: clamp(1rem, 3vw, 2rem);
 }
 
 .page-title {
-  font-size: 3rem;
+  font-size: clamp(2rem, 6vw, 3rem);
   font-weight: 800;
   color: var(--forest-green);
-  text-shadow: 0 0 30px rgba(15, 163, 90, 0.5);
+  text-shadow: 0 0 min(30px, 5vw) rgba(15, 163, 90, 0.5);
+  line-height: 1.2;
 }
 
 .filters {
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid rgba(15, 163, 90, 0.2);
-  border-radius: 12px;
-  padding: 1.5rem;
-  margin-bottom: 2rem;
+  border-radius: clamp(8px, 2vw, 12px);
+  padding: clamp(1rem, 3vw, 1.5rem);
+  margin-bottom: clamp(1rem, 3vw, 2rem);
 }
 
 .filter-form {
   display: flex;
-  gap: 1rem;
+  gap: clamp(0.5rem, 2vw, 1rem);
   flex-wrap: wrap;
   align-items: center;
 }
 
 .filter-select,
 .filter-input {
-  padding: 0.75rem 1rem;
+  padding: clamp(0.5rem, 2vw, 0.75rem) clamp(0.75rem, 2vw, 1rem);
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(15, 163, 90, 0.3);
-  border-radius: 8px;
+  border-radius: clamp(6px, 1.5vw, 8px);
   color: var(--white);
-  font-size: 0.95rem;
+  font-size: clamp(0.85rem, 2vw, 0.95rem);
   transition: all 0.3s ease;
-  flex: 1;
-  min-width: 150px;
+  flex: 1 1 min(150px, 100%);
+  min-width: min(150px, 100%);
 }
 
 .filter-select:focus,
 .filter-input:focus {
   outline: none;
   border-color: var(--forest-green);
-  box-shadow: 0 0 20px rgba(15, 163, 90, 0.3);
+  box-shadow: 0 0 min(20px, 4vw) rgba(15, 163, 90, 0.3);
   background: rgba(255, 255, 255, 0.08);
 }
 
@@ -51,21 +52,22 @@
 }
 
 .filter-btn {
-  padding: 0.75rem 2rem;
+  padding: clamp(0.5rem, 2vw, 0.75rem) clamp(1rem, 4vw, 2rem);
   background: var(--forest-green);
   border: none;
-  border-radius: 8px;
+  border-radius: clamp(6px, 1.5vw, 8px);
   color: var(--white);
-  font-size: 0.95rem;
+  font-size: clamp(0.85rem, 2vw, 0.95rem);
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
   white-space: nowrap;
+  flex: 0 0 auto;
 }
 
 .filter-btn:hover {
   background: #0d8a4d;
-  box-shadow: 0 0 30px rgba(15, 163, 90, 0.6);
+  box-shadow: 0 0 min(30px, 5vw) rgba(15, 163, 90, 0.6);
   transform: translateY(-2px);
 }
 
@@ -73,50 +75,127 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 2rem;
-  margin-top: 3rem;
-  padding: 2rem 0;
+  gap: clamp(1rem, 3vw, 2rem);
+  margin-top: clamp(1.5rem, 4vw, 3rem);
+  padding: clamp(1rem, 3vw, 2rem) 0;
+  flex-wrap: wrap;
 }
 
 .pagination-btn {
-  padding: 0.75rem 1.5rem;
+  padding: clamp(0.5rem, 2vw, 0.75rem) clamp(1rem, 3vw, 1.5rem);
   background: rgba(15, 163, 90, 0.2);
   border: 1px solid var(--forest-green);
-  border-radius: 8px;
+  border-radius: clamp(6px, 1.5vw, 8px);
   color: var(--forest-green);
   text-decoration: none;
   font-weight: 600;
   transition: all 0.3s ease;
+  flex: 0 0 auto;
+  text-align: center;
 }
 
 .pagination-btn:hover {
   background: var(--forest-green);
   color: var(--white);
-  box-shadow: 0 0 30px rgba(15, 163, 90, 0.6);
+  box-shadow: 0 0 min(30px, 5vw) rgba(15, 163, 90, 0.6);
   transform: translateY(-2px);
 }
 
 .pagination-info {
   color: var(--grey);
-  font-size: 0.95rem;
+  font-size: clamp(0.85rem, 2vw, 0.95rem);
+  text-align: center;
 }
 
+/* Enhanced mobile handling with container queries */
+@container (max-width: 400px) {
+  .filter-form {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .filter-select,
+  .filter-input,
+  .filter-btn {
+    width: 100%;
+    flex: 1 1 100%;
+  }
+}
+
+/* Keep your existing media query but enhance it */
 @media (max-width: 768px) {
   .page-title {
-    font-size: 2rem;
+    font-size: clamp(1.5rem, 4vw, 2rem);
   }
 
   .filter-form {
     flex-direction: column;
+    align-items: stretch;
+    gap: clamp(0.75rem, 2vw, 1rem);
   }
 
   .filter-select,
   .filter-input {
     width: 100%;
+    flex: 1 1 100%;
+    min-width: 100%;
+  }
+
+  .filter-btn {
+    width: 100%;
+    text-align: center;
   }
 
   .pagination {
     flex-direction: column;
-    gap: 1rem;
+    gap: clamp(0.75rem, 2vw, 1rem);
+  }
+  
+  .pagination-btn {
+    width: 100%;
+    max-width: 200px;
+  }
+}
+
+/* Additional fluid handling for very small screens */
+@media (max-width: 480px) {
+  .filters {
+    padding: clamp(0.75rem, 2vw, 1rem);
+    margin: 0 clamp(0.5rem, 2vw, 1rem) clamp(1rem, 3vw, 1.5rem);
+    width: calc(100% - clamp(1rem, 4vw, 2rem));
+  }
+  
+  .page-title {
+    font-size: clamp(1.25rem, 3.5vw, 1.75rem);
+    margin: 0 clamp(0.5rem, 2vw, 1rem) clamp(0.75rem, 2vw, 1rem);
+    text-align: center;
+  }
+  
+  .pagination-btn {
+    padding: clamp(0.75rem, 3vw, 1rem) clamp(1rem, 4vw, 1.5rem);
+  }
+}
+
+/* Large screen enhancements */
+@media (min-width: 1440px) {
+  .page-title {
+    font-size: clamp(3rem, 4vw, 3.5rem);
+  }
+  
+  .filters {
+    border-radius: 16px;
+    padding: 2rem;
+  }
+  
+  .filter-form {
+    gap: 1.5rem;
+  }
+}
+
+/* Smooth transitions for all interactive elements */
+@media (prefers-reduced-motion: no-preference) {
+  .filter-btn,
+  .pagination-btn {
+    transition: all 0.3s ease;
   }
 }

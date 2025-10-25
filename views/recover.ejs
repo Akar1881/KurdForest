@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recover Password</title>
+    <link rel="stylesheet" href="/css/auth.css">
+    <link rel="stylesheet" href="/css/global.css">
+</head>
+<body>
+    <%- include('partials/header') %>
+    <div class="auth-container">
+        <h1>Set New Password</h1>
+        <% if (typeof error !== 'undefined' && error) { %>
+            <div class="error-message">
+                <p><%= error %></p>
+            </div>
+        <% } %>
+        <% if (token) { %>
+            <form class="auth-form" action="/recover" method="POST">
+                <input type="hidden" name="token" value="<%= token %>">
+                <input type="password" name="password" placeholder="Enter new password" required minlength="6">
+                <button type="submit">Reset Password</button>
+            </form>
+        <% } else { %>
+            <div class="auth-link">
+                <p><a href="/forgot-password">Request a new password reset</a></p>
+            </div>
+        <% } %>
+        <div class="auth-link">
+            <p><a href="/login">Back to login</a></p>
+        </div>
+    </div>
+    <%- include('partials/footer') %>
+</body>
+</html>
