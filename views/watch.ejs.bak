@@ -410,7 +410,7 @@
     });
 
     if (subtitleUrl) {
-      const fullSubUrl = `https://kurdforest.xyz${subtitleUrl}`;
+      const fullSubUrl = `https://beta.kurdforest.xyz${subtitleUrl}`;
       params.append('sub_file', fullSubUrl);
       params.append('sub_label', 'Kurdish');
     }

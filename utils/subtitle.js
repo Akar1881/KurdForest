@@ -1,3 +1,4 @@
+require('dotenv').config();
 const fs = require('fs');
 const path = require('path');
 const fetch = require('node-fetch');
@@ -7,6 +8,7 @@ const translate = tr.default || tr;
 
 const BASE_DIR = path.join(__dirname, '..', 'subtitles');
 const BATCH_SIZE = 200;
+const TMDB_API_KEY = process.env.TMDB_KEY;
 
 function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
@@ -62,6 +64,20 @@ async function translateSubtitle(content) {
     .join('\n');
 }
 
+// 🆕 Fetch IMDb ID from TMDb API
+async function fetchImdbId(tmdbId, type) {
+  const url = `https://api.themoviedb.org/3/${type}/${tmdbId}/external_ids?api_key=${TMDB_API_KEY}`;
+  try {
+    const res = await fetch(url);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+    return data.imdb_id || null;
+  } catch (err) {
+    console.error('Failed to fetch IMDb ID:', err);
+    return null;
+  }
+}
+
 async function fetchAndTranslateSubtitle(tmdbId, type, season = null, episode = null) {
   const retries = 3;
   let attempts = 0;
@@ -78,11 +94,20 @@ async function fetchAndTranslateSubtitle(tmdbId, type, season = null, episode = 
 
   await ensureDir(folderPath);
 
+  // 🆕 Step 1: Get IMDb ID from TMDb
+  const imdbId = await fetchImdbId(tmdbId, type);
+  console.log(`Fetched IMDb ID for TMDb ${tmdbId}: ${imdbId}`);
+
   while (attempts < retries) {
     try {
-      const searchParams = type === 'movie'
-        ? { tmdb_id: tmdbId, format: 'srt' }
-        : { tmdb_id: tmdbId, season, episode, format: 'srt' };
+      // 🆕 Step 2: Prefer IMDb ID search, fallback to TMDb ID
+      const searchParams = imdbId
+        ? (type === 'movie'
+            ? { imdb_id: imdbId, format: 'srt' }
+            : { imdb_id: imdbId, season, episode, format: 'srt' })
+        : (type === 'movie'
+            ? { tmdb_id: tmdbId, format: 'srt' }
+            : { tmdb_id: tmdbId, season, episode, format: 'srt' });
 
       const subs = await searchSubtitles(searchParams);
 
@@ -117,7 +142,6 @@ function getSubtitlePath(tmdbId, type, season = null, episode = null) {
     : path.join(BASE_DIR, 'tvshows', String(tmdbId), `season${season}`, `episode${episode}`);
 
   const vttPath = path.join(folderPath, 'kurdish.vtt');
-
   return fs.existsSync(vttPath) ? vttPath : null;
 }
 
