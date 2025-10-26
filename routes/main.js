@@ -117,24 +117,40 @@ router.get('/anime', async (req, res) => {
 router.get('/search', async (req, res) => {
   try {
     const { q } = req.query;
-    if (!q) return res.render('search-results', { query: '', movies: [], shows: [], anime: [] });
+    const page = parseInt(req.query.page) || 1;
 
+    // If no query, render empty search page
+    if (!q) {
+      return res.render('search-results', {
+        query: '',
+        movies: [],
+        shows: [],
+        anime: [],
+        page: 1,
+        totalPages: 1
+      });
+    }
+
+    // Fetch both movie and TV search results
     const [movies, shows] = await Promise.all([
-      fetchTMDB(`/search/movie?query=${encodeURIComponent(q)}`),
-      fetchTMDB(`/search/tv?query=${encodeURIComponent(q)}`)
+      fetchTMDB(`/search/movie?query=${encodeURIComponent(q)}&page=${page}`),
+      fetchTMDB(`/search/tv?query=${encodeURIComponent(q)}&page=${page}`)
     ]);
 
-    const anime = shows.results.filter(show =>
-      show.genre_ids && show.genre_ids.includes(16)
-    );
+    // Separate anime from TV shows
+    const anime = shows.results.filter(show => show.genre_ids && show.genre_ids.includes(16));
+    const filteredShows = shows.results.filter(show => !show.genre_ids || !show.genre_ids.includes(16));
 
     res.render('search-results', {
       query: q,
-      movies: movies.results,
-      shows: shows.results.filter(show => !show.genre_ids || !show.genre_ids.includes(16)),
-      anime
+      movies: movies.results || [],
+      shows: filteredShows || [],
+      anime: anime || [],
+      page,
+      totalPages: Math.max(movies.total_pages || 1, shows.total_pages || 1)
     });
   } catch (error) {
+    console.error('Search error:', error);
     res.status(500).send('Error performing search');
   }
 });
