@@ -41,13 +41,27 @@ app.use(session({
   }
 }));
 
-// --- CORS fix for subtitles ---
+// --- CORS for subtitles ---
 app.use('/subtitles', (req, res, next) => {
-  res.header('Access-Control-Allow-Origin', 'https://vidlink.pro'); // Allow all origins
+  res.header('Access-Control-Allow-Origin', 'https://vidlink.pro');
   res.header('Access-Control-Allow-Methods', 'GET, OPTIONS');
   res.header('Access-Control-Allow-Headers', 'Content-Type, Range');
   res.header('Access-Control-Expose-Headers', 'Content-Range');
+  if (req.method === 'OPTIONS') return res.sendStatus(200);
   next();
+});
+
+// --- Restrict subtitle access to vidlink.pro ---
+app.use('/subtitles', (req, res, next) => {
+  const origin = req.headers.origin || '';
+  const referer = req.headers.referer || '';
+
+  if (origin.includes('vidlink.pro') || referer.includes('vidlink.pro')) {
+    return next(); // allowed
+  }
+
+  console.log(`❌ Blocked subtitle access from: origin=${origin}, referer=${referer}`);
+  return res.status(403).send('Access denied');
 });
 
 // --- Serve static subtitles ---
