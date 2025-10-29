@@ -513,16 +513,26 @@
   font-size: 0.95rem;
   transition: var(--transition);
   outline: none;
-}
 
-.control-select:focus {
-  border-color: var(--forest-primary);
-  box-shadow: 0 0 10px rgba(39, 174, 96, 0.3);
+  /* Prevent super long titles from breaking layout */
+  max-width: 250px; /* adjust as needed */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .control-select option {
   background: var(--forest-deep);
   color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 240px; /* keep inside dropdown */
+}
+
+.control-select:focus {
+  border-color: var(--forest-primary);
+  box-shadow: 0 0 10px rgba(39, 174, 96, 0.3);
 }
 
 @media (max-width: 1200px) {
