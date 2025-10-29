@@ -10,12 +10,22 @@ let cache = {
   trending: { data: null, timestamp: 0 },
   popular: { data: null, timestamp: 0 }
 };
-const CACHE_TTL = 300000;
+const CACHE_TTL = 300000; // 5 minutes
 
-async function fetchTMDB(endpoint) {
+// TMDB fetch with retry and error handling
+async function fetchTMDB(endpoint, retries = 3) {
   const url = `${TMDB_BASE}${endpoint}${endpoint.includes('?') ? '&' : '?'}api_key=${TMDB_KEY}`;
   const response = await fetch(url);
-  if (!response.ok) throw new Error('TMDB API error');
+
+  if (!response.ok) {
+    if (response.status === 429 && retries > 0) {
+      console.warn(`TMDB rate limit hit, retrying ${endpoint}...`);
+      await new Promise(r => setTimeout(r, 1000));
+      return fetchTMDB(endpoint, retries - 1);
+    }
+    throw new Error(`TMDB API error (${response.status}): ${url}`);
+  }
+
   return await response.json();
 }
 
@@ -30,6 +40,7 @@ function getCached(key, fetcher) {
   });
 }
 
+// Home route
 router.get('/', async (req, res) => {
   try {
     const trending = await getCached('trending', () => fetchTMDB('/trending/all/week'));
@@ -42,10 +53,12 @@ router.get('/', async (req, res) => {
       classic: classic.results.slice(0, 10)
     });
   } catch (error) {
+    console.error('Home error:', error.message);
     res.status(500).send('Error loading homepage');
   }
 });
 
+// Movies route
 router.get('/movies', async (req, res) => {
   try {
     const { genre, year, sort = 'popularity.desc', page = 1 } = req.query;
@@ -66,10 +79,12 @@ router.get('/movies', async (req, res) => {
       filters: { genre, year, sort }
     });
   } catch (error) {
+    console.error('Movies error:', error.message);
     res.status(500).send('Error loading movies');
   }
 });
 
+// TV Shows route
 router.get('/tvshows', async (req, res) => {
   try {
     const { genre, year, status, sort = 'popularity.desc', page = 1 } = req.query;
@@ -91,10 +106,12 @@ router.get('/tvshows', async (req, res) => {
       filters: { genre, year, status, sort }
     });
   } catch (error) {
+    console.error('TV shows error:', error.message);
     res.status(500).send('Error loading TV shows');
   }
 });
 
+// Anime route
 router.get('/anime', async (req, res) => {
   try {
     const { year, sort = 'popularity.desc', page = 1 } = req.query;
@@ -110,16 +127,17 @@ router.get('/anime', async (req, res) => {
       filters: { year, sort }
     });
   } catch (error) {
+    console.error('Anime error:', error.message);
     res.status(500).send('Error loading anime');
   }
 });
 
+// Search route
 router.get('/search', async (req, res) => {
   try {
     const { q } = req.query;
     const page = parseInt(req.query.page) || 1;
 
-    // If no query, render empty search page
     if (!q) {
       return res.render('search-results', {
         query: '',
@@ -131,13 +149,11 @@ router.get('/search', async (req, res) => {
       });
     }
 
-    // Fetch both movie and TV search results
     const [movies, shows] = await Promise.all([
       fetchTMDB(`/search/movie?query=${encodeURIComponent(q)}&page=${page}`),
       fetchTMDB(`/search/tv?query=${encodeURIComponent(q)}&page=${page}`)
     ]);
 
-    // Separate anime from TV shows
     const anime = shows.results.filter(show => show.genre_ids && show.genre_ids.includes(16));
     const filteredShows = shows.results.filter(show => !show.genre_ids || !show.genre_ids.includes(16));
 
@@ -150,34 +166,32 @@ router.get('/search', async (req, res) => {
       totalPages: Math.max(movies.total_pages || 1, shows.total_pages || 1)
     });
   } catch (error) {
-    console.error('Search error:', error);
+    console.error('Search error:', error.message);
     res.status(500).send('Error performing search');
   }
 });
 
+// Watch route (fixed & stable)
 router.get('/watch/:type/:id', async (req, res) => {
   try {
     const { type, id } = req.params;
     let endpoint = '';
 
-    if (type === 'movie') {
-      endpoint = `/movie/${id}`;
-    } else if (type === 'tv' || type === 'anime') {
-      endpoint = `/tv/${id}`;
-    } else {
-      return res.status(400).send('Invalid type');
+    if (type === 'movie') endpoint = `/movie/${id}`;
+    else if (type === 'tv' || type === 'anime') endpoint = `/tv/${id}`;
+    else return res.status(400).send('Invalid type');
+
+    const details = await fetchTMDB(endpoint);
+
+    let credits = null;
+    try {
+      credits = await fetchTMDB(`${endpoint}/credits`);
+    } catch (err) {
+      console.warn(`⚠️ No credits available for ${endpoint}`);
     }
 
-    // Fetch details with credits (cast information)
-    const [details, credits] = await Promise.all([
-      fetchTMDB(endpoint),
-      fetchTMDB(`${endpoint}/credits`) // Fetch cast information
-    ]);
-
-    // Add credits to details object
     details.credits = credits;
 
-    // Next episode info
     let nextEpisode = null;
     if (details.next_episode_to_air) {
       const airDate = new Date(details.next_episode_to_air.air_date);
@@ -193,29 +207,25 @@ router.get('/watch/:type/:id', async (req, res) => {
       };
     }
 
-    res.render('watch', {
-      type,
-      id,
-      details,
-      nextEpisode
-    });
-
+    res.render('watch', { type, id, details, nextEpisode });
   } catch (error) {
-    console.error('Watch page error:', error);
+    console.error('Watch page error:', error.message);
     res.status(500).send('Error loading watch page');
   }
 });
 
+// Watchlist route
 router.get('/watchlist', async (req, res) => {
-    if (!req.session.userId) {
-        return res.redirect('/login');
-    }
-    try {
-        const user = await User.findById(req.session.userId).populate('watchlist');
-        res.render('watchlist', { watchlist: user.watchlist });
-    } catch (error) {
-        res.status(500).send('Error loading watchlist');
-    }
+  if (!req.session.userId) {
+    return res.redirect('/login');
+  }
+  try {
+    const user = await User.findById(req.session.userId).populate('watchlist');
+    res.render('watchlist', { watchlist: user.watchlist });
+  } catch (error) {
+    console.error('Watchlist error:', error.message);
+    res.status(500).send('Error loading watchlist');
+  }
 });
 
 module.exports = router;
